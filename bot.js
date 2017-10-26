@@ -2,7 +2,7 @@
 const client = new Discord.Client();
 
 client.on('ready', () => {
-    console.log('Ahoj ja som bot Ludvik! Som k vaším službám.');
+    console.log('Ahoj ja som bot Ludvik! Som k vaším službám.\n---------------------------------------------');
 });
 
 client.on('message', message => {
@@ -13,7 +13,6 @@ client.on('message', message => {
 
     if (message.content === '!ping') {
         message.reply('pong');
-		console.log('message.author napísal !ping');
     }
 
     if (message.content === '!peto') {
