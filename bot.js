@@ -27,12 +27,16 @@ client.on('message', message => {
 		console.log(`[${new Date().toLocaleTimeString()}] ${author.username}: napísal !peto`.bgRed.white);
     }
     if (message.content === '!help') {
-        message.reply('GameStyle BOT\n1. !peto - Peto je slaby\n2. !ping - pong');
+        message.channel.send('1. <!peto> - Peto je slaby\n2. <!ping> - pong\n3. <!felix> - felix je pro\n4. Ahoj Ludvik - Skus a uvidis\n5. <!lubos> - Kde je luboš?\n6. <!pesnicky> - čoskoro!');
 		console.log(`[${new Date().toLocaleTimeString()}] ${author.username}: napísal !help`.bgRed.white);
     }
     if (message.content.match(/ahoj ludvik/gi)) {
         message.reply('Ahoj ja som bot Ludvik! Som k vaším službám.');
 		console.log(`[${new Date().toLocaleTimeString()}] ${author.username}: pozdravil Ludvika`.bgRed.white);
+    }
+    if (message.content === '!felix') {
+        message.channel.send('<@371718438680264715> je pro');
+		log(`${author.username}: napísal !felix`);
     }
     if(message.content === '!lubos') {
 		console.log(`[${new Date().toLocaleTimeString()}] ${author.username}: napísal !lubos`.bgRed.white);
