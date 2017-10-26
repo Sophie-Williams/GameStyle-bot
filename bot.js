@@ -16,12 +16,6 @@ client.on('message', message => {
     if (message.content === '!help') {
         message.reply('GameStyle BOT\n1. !peto - Peto je slaby\n2. !ping - pong');
     }
-        if (message.member.voiceChannel) {
-        message.member.voiceChannel.join()
-            .then(connection => {
-                const dispatcher = connection.playFile('lubos.mp3');
-                message.reply('Kde je luboš?');
-            });
     if(message.content === '!lubos') {
         if (message.member.voiceChannel) {
             message.member.voiceChannel.join()
