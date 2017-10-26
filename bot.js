@@ -6,6 +6,11 @@ client.on('ready', () => {
 });
 
 client.on('message', message => {
+    let author = message.author;
+
+    if(author.bot)
+        return;
+
     if (message.content === '!ping') {
         message.reply('pong');
     }
