@@ -16,7 +16,7 @@ client.on('message', message => {
     if (message.content === '!help') {
         message.reply('GameStyle BOT\n1. !peto - Peto je slaby\n2. !ping - pong');
     }
-    if message.content.match(/ahoj/gi) {
+    if (message.content.match(/ahoj/gi)) {
         message.reply('Ahoj ja som bot Ludvik! Som k vaším službám.');
     }
     if(message.content === '!lubos') {
