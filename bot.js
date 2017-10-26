@@ -3,7 +3,7 @@ const client = new Discord.Client();
 
 
 client.on('ready', () => {
-    console.log('I am ready!');
+    console.log('Ahoj ja som bot Ludvik! Som k vaším službám.');
 });
 
 client.on('message', message => {
@@ -17,7 +17,7 @@ client.on('message', message => {
     if (message.content === '!help') { // peto
         message.reply('GameStyle BOT\n1. !peto - Peto je slaby\n2. !ping - pong');
     }
-    if (message.member.voiceChannel) {
+        if (message.member.voiceChannel) {
         message.member.voiceChannel.join()
             .then(connection => {
                 const dispatcher = connection.playFile('lubos.mp3');
