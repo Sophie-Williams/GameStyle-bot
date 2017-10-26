@@ -1,7 +1,6 @@
 ﻿const Discord = require('discord.js');
 const client = new Discord.Client();
 
-
 client.on('ready', () => {
     console.log('Ahoj ja som bot Ludvik! Som k vaším službám.');
 });
@@ -23,6 +22,14 @@ client.on('message', message => {
                 const dispatcher = connection.playFile('lubos.mp3');
                 message.reply('Kde je luboš?');
             });
+    if(message.content === '!lubos') {
+        if (message.member.voiceChannel) {
+            message.member.voiceChannel.join()
+                .then(connection => {
+                    const dispatcher = connection.playFile('lubos.mp3');
+                    message.reply('Kde je luboš?');
+                });
+        }
     }
 });
 
