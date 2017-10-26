@@ -10,10 +10,10 @@ client.on('message', message => {
         message.reply('pong');
     }
 
-    if (message.content === '!peto') { // peto
+    if (message.content === '!peto') {
         message.reply('Peto je slaby!');
     }
-    if (message.content === '!help') { // peto
+    if (message.content === '!help') {
         message.reply('GameStyle BOT\n1. !peto - Peto je slaby\n2. !ping - pong');
     }
         if (message.member.voiceChannel) {
