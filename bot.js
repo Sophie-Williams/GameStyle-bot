@@ -2,34 +2,40 @@
 const client = new Discord.Client();
 
 client.on('ready', () => {
-    console.log('Ahoj ja som bot Ludvik! Som k vaším službám.\n---------------------------------------------');
+	let colors = require('colors');
+	console.log('\x1Bc');
+    console.log('---------------------------------------------\nAhoj ja som bot Ludvik! Som k vaším službám. \n---------------------------------------------'.green);
 });
 
 client.on('message', message => {
+	function log(message) {
+    console.log(`[${new Date().toLocaleTimeString()}] `.magenta + message.cyan);
+}
     let author = message.author;
-
+	let colors = require('colors');
     if(author.bot)
         return;
 
     if (message.content === '!ping') {
-        message.reply('pong');
-		console.log(`${author.username} napísal !ping`);
+        message.channel.send('Pong?!');
+		log(`${author.username}: napísal !ping`);
     }
 
     if (message.content === '!peto') {
-        message.reply('Peto je slaby!');
-		console.log(`${author.username} napísal !peto`);
+		const emoji = client.emojis.find('name', 'peto');
+        message.channel.send(`Peto je slabý! ${emoji}`);
+		console.log(`[${new Date().toLocaleTimeString()}] ${author.username}: napísal !peto`.bgRed.white);
     }
     if (message.content === '!help') {
         message.reply('GameStyle BOT\n1. !peto - Peto je slaby\n2. !ping - pong');
-		console.log(`${author.username} napísal !help`);
+		console.log(`[${new Date().toLocaleTimeString()}] ${author.username}: napísal !help`.bgRed.white);
     }
-    if (message.content.match(/ahoj/gi)) {
+    if (message.content.match(/ahoj ludvik/gi)) {
         message.reply('Ahoj ja som bot Ludvik! Som k vaším službám.');
-		console.log(`${author.username} napísal ahoj`);
+		console.log(`[${new Date().toLocaleTimeString()}] ${author.username}: pozdravil Ludvika`.bgRed.white);
     }
     if(message.content === '!lubos') {
-		console.log(`${author.username} napísal !lubos`);
+		console.log(`[${new Date().toLocaleTimeString()}] ${author.username}: napísal !lubos`.bgRed.white);
         if (message.member.voiceChannel) {
             message.member.voiceChannel.join()
                 .then(connection => {
@@ -38,6 +44,13 @@ client.on('message', message => {
                 });
         }
     }
-});
+	
+	
+// Pesnicky
+//    if (message.content === '!music') {
+//        message.reply('!pesnicka 1 - ');
+//		log(`${author.username}: napísal !music`);
+ //   }
 
+});
 client.login('MzcyODI4MTAyMTA5NDI5Nzc2.DNJ4zg.iAWdY3Tjedi2DFNVLwBT35i1IAA');
