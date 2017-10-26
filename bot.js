@@ -3,7 +3,8 @@ const promisify = require('promisify-node');
 const colors = require('colors');
 const fs = promisify('fs');
 
-const root = '../../Important/Hudba';
+//const root = '../../Important/Hudba';
+const root = './sounds/';
 const client = new Discord.Client();
 
 client.on('ready', () => {
@@ -16,13 +17,14 @@ client.on('message', async (message) => {
     const author = message.author;
     const args = message.content.split(' ');
     
-    if (author.bot || !message.content.startsWith('/'))
+    if (author.bot || !message.content.startsWith('#'))
         return;
 
     const cmd = args[0].substr(1, args[0].length);
     switch (cmd) {
         case 'list':
             {
+                log(`${author.username}: napísal #list`);
                 let files = (await fs.readdir(root)).filter(file => file.match(/\.mp3$/g)).map((file, index) => `${index+1}. ${file}`);
                 files.splice(10, files.length-10);
 
@@ -32,6 +34,7 @@ client.on('message', async (message) => {
         case 'play':
             {
                 const name = args.filter((_, index) => index != 0).join(' ');
+                log(`${author.username}: napísal #play <${name}>`.yellow);
                 const path = `${root}/${name}.mp3`;
                 if (args.length >= 1) {
                     if (fs.existsSync(path)) {
@@ -40,15 +43,16 @@ client.on('message', async (message) => {
                         dispatcher.setBitrate(256);
                         dispatcher.setVolume(.7);
 
-                        message.channel.send(`Now playing '${name}'`);
+                        message.channel.send(`Práve hrá '${name}'.`);
                     } else {
-                        message.channel.send(`Track '${name}' does not exist`);
+                        message.channel.send(`Skladba '${name}' neexistuje`);
                     }
                 }
             }
             break;
         case 'pause':
             {
+                log(`${author.username}: napísal #pause`);
                 const voiceConnection = await readyVoice(message);
                 const dispatcher = voiceConnection.dispatcher;
 
@@ -59,6 +63,7 @@ client.on('message', async (message) => {
             break;
         case 'resume':
             {
+                log(`${author.username}: napísal #pause`);
                 const voiceConnection = await readyVoice(message);
                 const dispatcher = voiceConnection.dispatcher;
 
@@ -69,6 +74,7 @@ client.on('message', async (message) => {
             break;
         case 'stop':
             {
+                log(`${author.username}: napísal #stop`);
                 const voiceConnection = await readyVoice(message);
                 const dispatcher = voiceConnection.dispatcher;
 
@@ -104,7 +110,7 @@ client.on('message', message => {
         log(`${author.username}: napísal !peto`);
     }
     if (message.content === '!help') {
-        message.channel.send('1. <!peto> - Peto je slaby\n2. <!ping> - pong\n3. <!felix> - felix je pro\n4. Ahoj Ludvik - Skus a uvidis\n5. <!lubos> - Kde je luboš?\n6. <!pesnicky> - čoskoro!');
+        message.channel.send('1. <!peto> - Peto je slaby\n2. <!ping> - pong\n3. <!felix> - felix je pro\n4. Ahoj Ludvik - Skus a uvidis\n5. <!lubos> - Kde je luboš?\n6. <#list> - zoznam pesničiek');
         log(`${author.username}: napísal !help`);
     }
     if (message.content.match(/ahoj ludvik/gi)) {
