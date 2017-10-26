@@ -13,7 +13,7 @@ client.on('message', message => {
 
     if (message.content === '!ping') {
         message.reply('pong');
-		console.log('message.author napísal !ping');
+		console.log(`${message.author} napísal !ping`);
     }
 
     if (message.content === '!peto') {
