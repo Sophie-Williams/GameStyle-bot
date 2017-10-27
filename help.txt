@@ -1,0 +1,10 @@
+ ahoj! Vidím že potrebuješ pomôcť. Tu máš zoznam dostupných príkazov:
+1. ``!peto`` - Peťo je slabý
+2. ``!ping`` - pong
+3. ``!felix`` - Felix je pro
+4. ``!lubos`` - Kde je Ľuboš?
+5. ``#list`` - zoznam pesničiek
+6. ``#play nazov_pesničky`` - prehrat pesničku
+7. ``#pause`` - zapauzovat pesničku
+8. ``#resume`` - odpauzovať pesničku
+9. ``#stop`` - úplne vypnúť pesničku
