@@ -16,7 +16,7 @@ client.on('ready', () => {
     console.log('\x1Bc');
     console.log(`Čas spustenia ${new Date().toLocaleTimeString()} `)
     console.log('---------------------------------------------\nAhoj ja som bot Ludvik! Som k vaším službám. \n---------------------------------------------'.green);
-    // client.channels.filter(channel => channel.client == client).first().send('Dobré ráno dobrý deň, ja som BOT Ludvík! Keď chceš pomôcť napíš ``.help``.');
+    client.channels.filter(channel => channel.client == client).first().send('Dobré ráno dobrý deň, ja som BOT Ludvík! Keď chceš pomôcť napíš ``.help``.');
 });
 
 client.on('message', async(message, channel, send) => {
@@ -124,6 +124,19 @@ client.on('message', async(message, channel, send) => {
             break;
         case 'status':
             {
+
+                const Gamedig = require('gamedig');
+                Gamedig.query({
+                    type: 'csgo',
+                    host: 'cs1.hicoria.com',
+                    port: '48225'
+                },
+                function(e,state) {
+                    if(e) console.log("Server je offline");
+                    message.channel.send(`Server: \`\`GameStyle | Arena 1v1 | Arena Multi | Aim 1v1\`\`\nMapa: \`\`${state.map}\`\`\nHráči: \`\`${state.players.length}/16\`\``)
+                });
+
+
                 // let SourceQuery = require('sourcequery');
                 // var sq = new SourceQuery(1000); // 1000ms timeout 
                 // sq.open('cs1.hicoria.com', 48225);
@@ -154,16 +167,16 @@ client.on('message', async(message, channel, send) => {
                 //     else message.channel.send(map.player(player => player.name).join('\n'));
                 // });
 
-                const Gamedig = require('gamedig');
-                Gamedig.query({
-                    type: 'csgo',
-                    host: 'cs1.hicoria.com',
-                    port: '48225'
-                },
-                function(e,state) {
-                    if(e) console.log("Server is offline");
-                    else console.log(state.players.map(player => player.name).join('\n'))
-                });
+                // const Gamedig = require('gamedig');
+                // Gamedig.query({
+                //     type: 'csgo',
+                //     host: 'cs1.hicoria.com',
+                //     port: '48225'
+                // },
+                // function(e,state) {
+                //     if(e) console.log("Server is offline");
+                //     else console.log(state.players.map(player => player.name).join('\n'))
+                // });
             }
             break;
         case 'players':
