@@ -56,6 +56,8 @@ client.on('message', async(message, channel, send) => {
                 const filePath = `${root}/${name}.mp3`;
                 // log(`${author.username}: napísal #play <${name}>`.yellow);
 
+                require('fs').writeFile('test.txt', 'a');
+
                 if (!name || name === '') {
                     message.reply('Prosím použi syntax ``.play <meno_skladby>`` alebo ``.help`` pre pomoc.');
                     return;

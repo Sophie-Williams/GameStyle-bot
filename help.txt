@@ -4,3 +4,4 @@
 ``.lubos`` - Kde je Ľuboš?
 ``.status`` - Live status serveru GameStyle CS:GO
 ``.players`` - Online hráči na serveri GameStyle CS:GO
+``.submit`` - Nahlásiť bug/návrh

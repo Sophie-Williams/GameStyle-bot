@@ -14,10 +14,9 @@
     "discord.js": "^11.2.1",
     "ffmpeg-binaries": "^3.2.2-3",
     "gamedig": "^1.0.37",
-    "jslint": "^0.11.0",
     "opusscript": "0.0.4",
-    "promisify-node": "^0.4.0",
     "request": "^2.83.0",
+    "request-promise-any": "^1.0.5",
     "sourcequery": "0.0.2"
   }
 }
