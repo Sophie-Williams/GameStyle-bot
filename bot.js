@@ -16,7 +16,7 @@ client.on('ready', () => {
     console.log('\x1Bc');
     console.log(`Čas spustenia ${new Date().toLocaleTimeString()} `)
     console.log('---------------------------------------------\nAhoj ja som bot Ludvik! Som k vaším službám. \n---------------------------------------------'.green);
-    client.channels.filter(channel => channel.client == client).first().send('Dobré ráno dobrý deň, ja som BOT Ludvík! Keď chceš pomôcť napíš ``.help``.');
+    // client.channels.filter(channel => channel.client == client).first().send('Dobré ráno dobrý deň, ja som BOT Ludvík! Keď chceš pomôcť napíš ``.help``.');
 });
 
 client.on('message', async(message, channel, send) => {
@@ -56,7 +56,7 @@ client.on('message', async(message, channel, send) => {
 
                 if (!name || name === '')
                 {
-                    message.reply('Prosím použi syntax ``.play <meno_skladby>``');
+                    message.reply('Prosím použi syntax ``.play <meno_skladby>`` alebo ``.help`` pre pomoc.');
                     return;
                 }
 
@@ -195,14 +195,70 @@ client.on('message', async(message, channel, send) => {
         break;
         case 'help':
             {
+                const emoji = client.emojis.find('name', 'terminal');
+                const emoji2 = client.emojis.find('name', 'itunes');
+                const emoji3 = client.emojis.find('name', 'notepad');
+                // message.channel.send();
                 var request = require('request');
                 request('https://dl.dropboxusercontent.com/s/bn6typ1gs8xh7d2/help.txt?dl=0', function (error, response, body) {
-                    // console.log('error:', error); // Print the error if one occurred
-                    // console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
-                    // console.log('body:', body); // Print the HTML for the Google homepage.
-                    message.reply(`${body}`);
-                    // log(`${author.username}: napísal !help`);
-                });
+                    message.channel.send({embed: {
+                        color: 0xFA9040,
+                        author: {
+                            name: 'Ludvik - Help (Dostupné príkazy a info o mne.)',
+                            icon_url: client.user.avatarURL,
+                        },
+                        title: "Ahoj ja som bot Ludvik.",
+                        // description: `${emoji} __Tu sú nejaké dostupné príkazy:__`,
+                        fields: [{
+                            name: `${emoji} __Tu sú nejaké dostupné príkazy:__`,
+                            value: `${body}`
+                        },
+                        {
+                            name: `${emoji2} __Nastavenie hudby:__`,
+                            value: `\`\`.list\`\` - Zobrazí dostupné sklaby ♪\n\`\`.play názov_pesničky\`\` - Prehrá skladbu\n\`\`.pause\`\` - Pozastaví pesničku\n\`\`.resume\`\` - Pokračovať v pesníčke\n\`\`.stop\`\` - Úplne vypnúť pesničku`
+                        },
+                        {
+                            name: `${emoji3} __Niečo o mne:__`,
+                            value: `Vytvoril ma: fastkiller, felix5\nBol som vytvorený: 26.10.2017 (večer).\nPozám iba 1. jazyk a to JavaScript.`
+                        }
+                    ],
+                    timestamp: new Date(),
+                    footer: {
+                        icon_url: client.user.avatarURL,
+                        text: "© GameStyle, fastkiller"
+                    // }
+                    }
+            
+                }})
+            })
+            }
+
+        
+            break;
+        case 'submit':
+            {
+                const sub = args.filter((_, index) => index != 0).join(' ');
+                let date = new Date();
+                let current_hour = date.getHours();
+                if (!sub || sub === '')
+                {
+                    message.reply('Prosím použi syntax ``.submit a tvoj návrh/bug`` alebo ``.help`` pre pomoc.');
+                    return;
+                } else {
+
+                
+                if (args.length >= 1) {
+                    var fs = require('fs');
+                    fs.appendFile(`./submitions.txt`, `\r\n${sub}`, null, function(err) {
+                        if(err) {
+                            return console.log(err);
+                        }
+                    
+                        console.log("Bol prijatý návrh/report!");
+                        message.reply("Tvoj návrh/bug bol úspešne odoslaný!")
+                    });
+                } 
+            }
             }
             break;
         case 'peto':
