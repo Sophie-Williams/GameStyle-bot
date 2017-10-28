@@ -76,7 +76,7 @@ client.on('message', async(message, channel, send) => {
             break;
         case 'pause':
             {
-                log(`${author.username}: napísal #pause`);
+                // log(`${author.username}: napísal #pause`);
                 const voiceConnection = await readyVoice(message);
                 const dispatcher = voiceConnection.dispatcher;
 
@@ -98,7 +98,7 @@ client.on('message', async(message, channel, send) => {
             break;
         case 'stop':
             {
-                log(`${author.username}: napísal #stop`);
+                // log(`${author.username}: napísal #stop`);
                 const voiceConnection = await readyVoice(message);
                 const dispatcher = voiceConnection.dispatcher;
 
