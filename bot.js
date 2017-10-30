@@ -215,9 +215,9 @@ client.on('message', async(message) => {
                       emoji2 = client.emojis.find('name', 'itunes'),
                       emoji3 = client.emojis.find('name', 'notepad');
 
-                const help1 = await rp('https://dl.dropboxusercontent.com/s/bn6typ1gs8xh7d2/help.txt?dl=0'),
-                      help2 = await rp('https://dl.dropboxusercontent.com/s/9259oju5ruqh92p/help2.txt?dl=0'),
-                      help3 = await rp('https://dl.dropboxusercontent.com/s/huf32wuk2hazims/help3.txt?dl=0');
+                const help1 = await rp('https://dl.dropboxusercontent.com/s/ez6x5gp7g1jfvua/help.txt?dl=0'),
+                      help2 = await rp('https://dl.dropboxusercontent.com/s/fcb1oss8jrzxf51/help2.txt?dl=0'),
+                      help3 = await rp('https://dl.dropboxusercontent.com/s/1rm0yhygxuuw2n9/help3.txt?dl=0');
 
                 channel.send({
                     embed: {
