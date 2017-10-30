@@ -1,22 +1,41 @@
 {
-  "name": "discord-bot",
+  "name": "gamestyle-bot",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "NOTHING TO SEE HERE",
+  "main": "bot.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node bot.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fa5tkill3r/GameStyle-bot.git"
+  },
+  "contributors": [
+    {
+      "name": "Nicolas Ondráš",
+      "url": "https://github.com/fa5tkill3r"
+    },
+    {
+      "name": "Felix Vítek",
+      "url": "https://github.com/felox2"
+    }
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/fa5tkill3r/GameStyle-bot/issues"
+  },
+  "homepage": "https://github.com/fa5tkill3r/GameStyle-bot#readme",
+  "engines": {
+    "node": ">=8.0.0"
+  },
   "dependencies": {
     "colors": "^1.1.2",
     "discord.js": "^11.2.1",
-    "ffmpeg-binaries": "^3.2.2-3",
     "gamedig": "^1.0.37",
+    "lowdb": "^1.0.0",
     "opusscript": "0.0.4",
     "request": "^2.83.0",
     "request-promise-any": "^1.0.5",
-    "sourcequery": "0.0.2"
+    "yamljs": "^0.3.0"
   }
 }

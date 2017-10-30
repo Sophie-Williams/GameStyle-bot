@@ -2,104 +2,156 @@
 const path = require('path');
 const colors = require('colors');
 const rp = require('request-promise-any');
+const Gamedig = require('gamedig');
+const low = require('lowdb');
+const FileSync = require('lowdb/adapters/FileSync');
+const Yaml = require('yamljs');
 const fs = require('fs');
 const promisify = require('util').promisify;
 const readdir = promisify(fs.readdir);
 
-//const root = '../../Important/Hudba';
-const root = './sounds/';
+const SOUNDS_DIR = './sounds/';
+const TOKEN = 'MzcyODI4MTAyMTA5NDI5Nzc2.DNJ4zg.iAWdY3Tjedi2DFNVLwBT35i1IAA';
+
 const client = new Discord.Client();
-const cmdColors = {
-    play: colors.yellow
-}
+const adapter = new FileSync('config.yaml', {
+    serialize: array => Yaml.stringify(array),
+    deserialize: string => Yaml.parse(string),
+    defaultValue: {
+        colors: {
+            '*': 'green',
+            play: 'yellow'
+        },
+        gamedigServerInfo: {
+            type: 'csgo',
+            host: 'cs1.hicoria.com',
+            port: '48225'
+        },
+        player: {
+            volume: 0.2
+        }
+    }
+});
+const config = low(adapter);
 
 client.on('ready', () => {
-    client.user.setGame('Som Ludvik! .help pre pomoc.');
     console.log('\x1Bc');
-    console.log(`Čas spustenia ${new Date().toLocaleTimeString()} `)
     console.log('---------------------------------------------\nAhoj ja som bot Ludvik! Som k vaším službám. \n---------------------------------------------'.green);
+    log(`Čas spustenia ${new Date().toLocaleTimeString()}`);
+
+    // client.user.setGame('Som Ludvik! .help pre pomoc.');
+    client.user.setGame('.help pre pomoc');
+
     // client.channels.filter(channel => channel.client == client).first().send('Dobré ráno dobrý deň, ja som BOT Ludvík! Keď chceš pomôcť napíš ``.help``.');
 });
 
-client.on('message', async(message, channel, send) => {
-    const author = message.author;
-    const args = message.content.split(' ');
+client.on('message', async(message) => {
+    const author = message.author,
+          content = message.content,
+          channel = message.channel;
 
-    if (message.content.match(/ahoj ludvik/gi)) {
+    config.read();
+
+    if (content.match(/^ahoj ludvik(.*)/gi)) {
         message.reply('Ahoj ja som bot Ludvik! Som k vaším službám.');
         log(`${author.username}: pozdravil Ludvika`);
         return;
     }
 
-    if (author.bot || !message.content.startsWith('.'))
+    if (author.bot || content.search(/^\.(.+)/g) === -1)
         return;
 
-    const cmd = args[0].substr(1, args[0].length);
+    const args = content.split(' '),
+          cmd = content.replace(/^\.(\w+).*/g, '$1').toLowerCase();
+    args.splice(0, 1);
 
-    // log((cmd === 'play' ? ''.yellow : ''.green) + `${author.username}: napísal ${args.join(' ')}`);
-    let color = cmdColors[cmd] || colors.green;
-    log(color(`${author.username}: napísal .${cmd} ${colors.bold(args.filter((_, index) => index != 0).join(' '))}`));
+    const color = config.get(`colors.${cmd}`).value() || config.get('colors.*').value();
+    log(colors[color](`${author.username}: napísal .${cmd} ${colors.bold(args.join(' '))}`));
 
     switch (cmd) {
         case 'list':
             {
-                // log(`${author.username}: napísal #list`);
-                let files = (await readdir(root)).filter(file => file.match(/\.mp3$/g)).map((file, index) => `\`${path.basename(file, path.extname(file))}\`\n`);
+                let files = (await readdir(SOUNDS_DIR)).filter(file => file.match(/\.mp3$/gi)).map((file) => `\` ${path.basename(file, path.extname(file))}\``);
                 // files.splice(10, files.length - 10);
 
-                message.channel.send(`Dostupné skladby:\n${files.join('')}`);
+                channel.send(`Dostupné skladby:\n${files.join('\n')}`);
+            }
+            break;
+        case 'leave':
+            {
+                const voiceConnection = await message.readyVoice();
+
+                if(voiceConnection)
+                    voiceConnection.disconnect();
+            }
+            break;
+        case 'lubos':
+            {
+                const voiceConnection = await message.readyVoice(true);
+
+                if(voiceConnection.dispatcher)
+                    voiceConnection.dispatcher.end();
+
+                const dispatcher = voiceConnection.playFile(path.join(SOUNDS_DIR, 'lubos.mp3'));
+
+                dispatcher.setVolume(config.get('player.volume').value() || 0.2);
+                message.reply('Kde je luboš?');
+
+                // const zlemije = function() {
+                //     voiceConnection.disconnect();
+                // }
+
+                // setTimeout(zlemije, 2000);
             }
             break;
         case 'play':
             {
-                const name = args.filter((_, index) => index != 0).join(' ');
-                const filePath = `${root}/${name}.mp3`;
-                // log(`${author.username}: napísal #play <${name}>`.yellow);
+                const name = args.join(' ');
+                const filePath = path.join(SOUNDS_DIR, name + '.mp3');
 
                 if (!name || name === '') {
-                    message.reply('Prosím použi syntax ``.play <meno_skladby>`` alebo ``.help`` pre pomoc.');
-                    return;
+                    return message.reply('Prosím použi syntax ``.play <meno_skladby>`` alebo ``.help`` pre pomoc.');
                 }
 
-                if (args.length >= 1) {
-                    if (fs.existsSync(filePath)) {
-                        const voiceConnection = await readyVoice(message);
-                        const dispatcher = voiceConnection.playFile(filePath);
-                        dispatcher.setBitrate(64);
-                        dispatcher.setVolume(0.1);
-                        message.channel.send(`Práve hrá '${name}'.`);
-                    } else {
-                        message.channel.send(`Skladba '${name}' neexistuje`);
-                    }
+                if (fs.existsSync(filePath)) {
+                    const voiceConnection = await message.readyVoice(true);
+
+                    if(voiceConnection.dispatcher)
+                        voiceConnection.dispatcher.end();
+
+                    const dispatcher = voiceConnection.playFile(filePath);
+
+                    dispatcher.setVolume(config.get('player.volume').value() || 0.1);
+
+                    channel.send(`Práve hrá '${name}'.`);
+                } else {
+                    channel.send(`Skladba '${name}' neexistuje`);
                 }
             }
             break;
         case 'pause':
             {
-                // log(`${author.username}: napísal #pause`);
-                const voiceConnection = await readyVoice(message);
+                const voiceConnection = await message.readyVoice();
                 const dispatcher = voiceConnection.dispatcher;
 
-                if (dispatcher) {
+                if (dispatcher && !dispatcher.paused) {
                     dispatcher.pause();
                 }
             }
             break;
         case 'resume':
             {
-                // log(`${author.username}: napísal #pause`);
-                const voiceConnection = await readyVoice(message);
+                const voiceConnection = await message.readyVoice();
                 const dispatcher = voiceConnection.dispatcher;
 
-                if (dispatcher) {
+                if (dispatcher && dispatcher.paused) {
                     dispatcher.resume();
                 }
             }
             break;
         case 'stop':
             {
-                // log(`${author.username}: napísal #stop`);
-                const voiceConnection = await readyVoice(message);
+                const voiceConnection = await message.readyVoice();
                 const dispatcher = voiceConnection.dispatcher;
 
                 if (dispatcher) {
@@ -107,105 +159,67 @@ client.on('message', async(message, channel, send) => {
                 }
             }
             break;
-            // case 'volume':
-            //     {
-            //         const dispatcher = voiceConnection.dispatcher;
-            //         const voiceConnection = await readyVoice(message);
-            //         const vol = args.filter((_, index) => index != 0).join(' ');
-            //         dispatcher.setVolume(vol);
-            //     }
-            //     break;
+        case 'volume':
+            {
+                const volume = parseFloat(args[0]);
 
-            // custom
+                if(isNaN(volume) || volume < 0 || volume > 100) {
+                    return message.reply('Prosím zadaj platnú hlasitosť (0-100).');
+                }
+
+                config.set('player.volume', volume / 100).write();
+
+                const voiceConnection = await message.readyVoice();
+
+                if(voiceConnection && voiceConnection.dispatcher)
+                    voiceConnection.dispatcher.setVolume(volume / 100);
+                message.reply(`Hlasitosť zmenená na ${volume}%.`);
+            } break;
         case 'ping':
             {
-                message.channel.send('Pong?!');
-                // log(`${author.username}: napísal !ping`);
+                message.reply('Pong?!');
             }
             break;
         case 'status':
             {
-
-                const Gamedig = require('gamedig');
-                Gamedig.query({
-                        type: 'csgo',
-                        host: 'cs1.hicoria.com',
-                        port: '48225'
-                    },
-                    function (e, state) {
-                        if (e) console.log("Server je offline");
-                        message.channel.send(`Server: \`\`GameStyle | Arena 1v1 | Arena Multi | Aim 1v1\`\`\nMapa: \`\`${state.map}\`\`\nHráči: \`\`${state.players.length}/16\`\``)
+                Gamedig.query(config.get('gamedigServerInfo').value(),
+                    function (err, state) {
+                        if (err) {
+                            message.reply('Server je offline');
+                            return error("Server je offline");
+                        }
+                        
+                        channel.send(`Server: \`\`GameStyle | Arena 1v1 | Arena Multi | Aim 1v1\`\`\nMapa: \`\`${state.map}\`\`\nHráči: \`\`${state.players.length}/16\`\``);
                     });
-
-
-                // let SourceQuery = require('sourcequery');
-                // var sq = new SourceQuery(1000); // 1000ms timeout 
-                // sq.open('cs1.hicoria.com', 48225);
-
-                // sq.getInfo(function(err, info){
-                //     console.log('Mapa:', info.map);
-                // });
-
-                // sq.getInfo(function(err, info){
-                //     message.channel.send(`Players: ${'Online Players:', info.players}`);
-                // });
-
-                // sq.getRules(function(err, rules){
-                //     console.log('Server Rules:', rules);
-                // });
-
-                // const Gamedig = require('gamedig');
-                // Gamedig.query({
-                //     type: 'csgo',
-                //     host: 'cs1.hicoria.com',
-                //     port: '48225'
-                // },
-                // function(e, state) {
-                //     if(e) {
-                //         console.error(e);
-                //         console.log("Server is offline");
-                //     }
-                //     else message.channel.send(map.player(player => player.name).join('\n'));
-                // });
-
-                // const Gamedig = require('gamedig');
-                // Gamedig.query({
-                //     type: 'csgo',
-                //     host: 'cs1.hicoria.com',
-                //     port: '48225'
-                // },
-                // function(e,state) {
-                //     if(e) console.log("Server is offline");
-                //     else console.log(state.players.map(player => player.name).join('\n'))
-                // });
             }
             break;
         case 'players':
             {
-                const Gamedig = require('gamedig');
-                Gamedig.query({
-                        type: 'csgo',
-                        host: 'cs1.hicoria.com',
-                        port: '48225'
-                    },
-                    function (e, state) {
-                        if (e) console.log("Server je offline");
-                        message.channel.send(`Na serveri sú práve títo ludia: \n\`${state.players.map((player, index) => `${index+1}. ${player.name}`).join('\n')}\``)
+                Gamedig.query(config.get('gamedigServerInfo').value(),
+                    (err, state) => {
+                        if (err) {
+                            message.reply('Server je offline');
+                            return error("Server je offline");
+                        }
+
+                        if(state.players.length > 0)
+                            channel.send(`Na serveri sú práve títo ludia: \n\`${state.players.map((player, index) => ` ${index+1}. ${player.name}`).join('\n')}\``);
+                        else
+                            channel.send('Server je práve prázdny.');
                     });
             }
             break;
         case 'help':
             {
-                const emoji = client.emojis.find('name', 'terminal');
-                const emoji2 = client.emojis.find('name', 'itunes');
-                const emoji3 = client.emojis.find('name', 'notepad');
-                // message.channel.send();
+                const emoji = client.emojis.find('name', 'terminal'),
+                      emoji2 = client.emojis.find('name', 'itunes'),
+                      emoji3 = client.emojis.find('name', 'notepad');
 
-                const help1 = await rp('https://dl.dropboxusercontent.com/s/bn6typ1gs8xh7d2/help.txt?dl=0');
-                const help2 = await rp('https://dl.dropboxusercontent.com/s/9259oju5ruqh92p/help2.txt?dl=0');
-                const help3 = await rp('https://dl.dropboxusercontent.com/s/huf32wuk2hazims/help3.txt?dl=0');
+                const help1 = await rp('https://dl.dropboxusercontent.com/s/bn6typ1gs8xh7d2/help.txt?dl=0'),
+                      help2 = await rp('https://dl.dropboxusercontent.com/s/9259oju5ruqh92p/help2.txt?dl=0'),
+                      help3 = await rp('https://dl.dropboxusercontent.com/s/huf32wuk2hazims/help3.txt?dl=0');
 
-                message.channel.send({
+                channel.send({
                     embed: {
                         color: 0xFA9040,
                         author: {
@@ -213,14 +227,12 @@ client.on('message', async(message, channel, send) => {
                             icon_url: client.user.avatarURL,
                         },
                         title: "Ahoj ja som bot Ludvik.",
-                        // description: `${emoji} __Tu sú nejaké dostupné príkazy:__`,
                         fields: [{
-                                name: `${emoji} __Tu sú nejaké dostupné príkazy:__`,
-                                value: help1
+                            name: `${emoji} __Tu sú nejaké dostupné príkazy:__`,
+                            value: help1
                             },
                             {
                                 name: `${emoji2} __Nastavenie hudby:__`,
-                                // value: `\`\`.list\`\` - Zobrazí dostupné sklaby ♪\n\`\`.play názov_pesničky\`\` - Prehrá skladbu\n\`\`.pause\`\` - Pozastaví pesničku\n\`\`.resume\`\` - Pokračovať v pesníčke\n\`\`.stop\`\` - Úplne vypnúť pesničku`
                                 value: help2
                             },
                             {
@@ -237,156 +249,74 @@ client.on('message', async(message, channel, send) => {
                     }
                 });
             }
-
-
             break;
         case 'submit':
             {
-                const sub = args.filter((_, index) => index != 0).join(' ');
-                let date = new Date();
-                let current_hour = date.getHours();
+                const sub = args.join(' ');
                 if (!sub || sub === '') {
                     message.reply('Prosím použi syntax ``.submit a tvoj návrh/bug`` alebo ``.help`` pre pomoc.');
                     return;
                 } else {
+                    fs.appendFile(`./submitions.txt`, `${sub}\r\n`, (err) => {
+                        if (err)
+                            return error(err);
 
-
-                    if (args.length >= 1) {
-                        fs.appendFile(`./submitions.txt`, `\r\n${sub}`, null, function (err) {
-                            if (err) {
-                                return console.log(err);
-                            }
-
-                            console.log("Bol prijatý návrh/report!");
-                            message.reply("Tvoj návrh/bug bol úspešne odoslaný!")
-                        });
-                    }
+                        log(`Bol prijatý návrh/report od ${author.username}!`);
+                        message.reply("Tvoj návrh/bug bol úspešne odoslaný!");
+                    });
                 }
             }
             break;
         case 'peto':
             {
                 const emoji = client.emojis.find('name', 'peto');
-                message.channel.send(`Peto je slabý! ${emoji}`);
-
+                channel.send(`Peto je slabý! ${emoji}`);
             }
             break;
         case 'felix':
             {
-                message.channel.send('<@371718438680264715> je pro');
-                // log(`${author.username}: napísal !felix`);
+                channel.send('<@371718438680264715> je pro');
             }
             break;
         case 'random':
             {
-                // function doStuff() {
-                //     console.log(Math.round(Math.random() * (5 - 1) + 1))
-                //   };
-
-                // while (true) {
-                message.reply(`Tvoje náhodne číslo je: ${Math.round(Math.random() * (100 - 1) + 1)}!`)
-                // }
-                //     function run() {
-                // setInterval(doStuff, 1);
-
-                //     };
-                //     run();
-
+                const max = 100, min = 1;
+                message.reply(`Tvoje náhodne číslo je: ${Math.round(Math.random() * (max - min) + min)}!`)
             }
             break;
         default:
             {
-                if (message.content === '.lubos') {
-                    const voiceConnection = await readyVoice(message);
-                    // log(`${author.username}: napísal !lubos`);
-                    if (message.member.voiceChannel) {
-                        message.member.voiceChannel.join()
-                            .then(connection => {
-                                const dispatcher = connection.playFile('lubos.mp3');
-                                message.reply('Kde je luboš');
-                                function zlemije() {
-                                    voiceConnection.disconnect();
-                                }
-                                
-                                setTimeout(zlemije, 2000);
-                                
-                            });
-                    }
-                } else {
-                    message.reply('Neznámy príkaz! Napíš ``.help`` pre pomoc.');
-                }
+                message.reply('Neznámy príkaz! Napíš ``.help`` pre pomoc.');
             }
     }
 });
 
-// client.on('message', message => {
-//     let author = message.author;
-//     let colors = require('colors');
-//     if (author.bot)
-//         return;
+Discord.Message.prototype.readyVoice = async function(shouldConnect = false) {
+        if (!this.member.voiceChannel) {
+            this.reply('Musíš byť vo voice channely!');
+            return undefined;
+        }
 
-//     //     R.I.P Pesnicky
-//     //        if (message.content === '!music') {
-//     //            message.reply('!pesnicka 1 - ');
-//     //     		log(`${author.username}: napísal !music`);
-//     //       }
-//     // });
+        if (client.voiceConnections.first())
+            return client.voiceConnections.first();
 
-
-//     if (author.bot || !message.content.startsWith('.'))
-//         return;
-//     const args = message.content.split(' ');
-//     const cmd = args[0].substr(1, args[0].length);
-//     switch (cmd) {
-
-//     }
-//     // if (message.content === '!ping') {
-//     //     message.channel.send('Pong?!');
-//     //     log(`${author.username}: napísal !ping`);
-//     // }
-
-//     // if (message.content === '!help') {
-//     //     var request = require('request');
-//     //     request('https://dl.dropboxusercontent.com/s/bn6typ1gs8xh7d2/help.txt?dl=0', function (error, response, body) {
-//     //         // console.log('error:', error); // Print the error if one occurred
-//     //         // console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
-//     //         // console.log('body:', body); // Print the HTML for the Google homepage.
-//     //       message.reply(`${body}`);
-//     //       log(`${author.username}: napísal !help`);
-//     //     });
-//     // }
-
-//     // if (message.content === '!help') {
-//     //     message.channel.send('1. <!peto> - Peto je slaby\n2. <!ping> - pong\n3. <!felix> - felix je pro\n4. Ahoj Ludvik - Skus a uvidis\n5. <!lubos> - Kde je luboš?\n6. <#list> - zoznam pesničiek');
-//     //     log(`${author.username}: napísal !help`);
-//     // }
-
-// });
-
+        if(shouldConnect) {
+            try {
+                return await this.member.voiceChannel.join();
+            } catch (err) {
+                return err;
+            }
+        } else {
+            return undefined;
+        }
+};
 
 function log(message) {
     console.log(`[${new Date().toLocaleTimeString()}] `.magenta.reset + message.cyan);
 }
 
-function readyVoice(message) {
-    return new Promise((resolve, reject) => {
-        if (!message.member.voiceChannel) {
-            reject('Not a voice channel!');
-            return;
-        }
-        if (client.voiceConnections.first()) {
-            resolve(client.voiceConnections.first());
-            return;
-        }
-
-        message.member.voiceChannel.join()
-            .then(voiceConnection => {
-                resolve(voiceConnection);
-            })
-            .catch(error => {
-                reject(error);
-            });
-    });
+function error(message) {
+    console.log(`[${new Date().toLocaleTimeString()}] `.magenta.reset + message.red);
 }
 
-client.login('MzcyODI4MTAyMTA5NDI5Nzc2.DNJ4zg.iAWdY3Tjedi2DFNVLwBT35i1IAA');
+client.login(TOKEN);

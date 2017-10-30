@@ -1,5 +1,0 @@
-``.list`` - Zobrazí dostupné sklaby ♪
-``.play názov_pesničky`` - Prehrá skladbu
-``.pause`` - Pozastaví pesničku
-``.resume`` - Pokračovať v pesníčke
-``.stop`` - Úplne vypnúť pesničku

@@ -57,3 +57,19 @@ typings/
 # dotenv environment variables file
 .env
 
+
+# visual studio code configs
+.jshintrc
+.vs/
+
+# sounds
+sounds/
+
+# start scripts
+Start.bat
+starta.bat
+
+# configs and such
+config.yaml
+submissions.txt
+help*.txt
