@@ -304,7 +304,8 @@ Discord.Message.prototype.readyVoice = async function(shouldConnect = false) {
             try {
                 return await this.member.voiceChannel.join();
             } catch (err) {
-                return err;
+                error(err);
+                throw err;
             }
         } else {
             return undefined;
